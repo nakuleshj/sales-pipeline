@@ -1,0 +1,3 @@
+flask-session
+kafka-python
+pandas
