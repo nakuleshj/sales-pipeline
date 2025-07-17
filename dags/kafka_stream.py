@@ -1,6 +1,6 @@
 from datetime import datetime
-#from airflow import DAG
-#from airflow.operators.python import PythonOperator
+from airflow import DAG
+from airflow.operators.python import PythonOperator
 import json, random
 from kafka import KafkaProducer
 import pandas as pd
@@ -11,9 +11,7 @@ default_args = {
     'start_date' : datetime(2023, 9, 3, 10, 00)
 }
 def get_data():
-    print('getting data')
-    df=pd.read_excel('./data/retail_dataset.xlsx')
-    
+    df=pd.read_csv('/opt/airflow/data/retail_dataset.csv')
     return df
 
 def format_msg(invoice_data: pd.DataFrame, invoice_id: int):
@@ -34,13 +32,13 @@ def stream_data():
     df = get_data()
     
     producer = KafkaProducer(
-        bootstrap_servers=['localhost:9092'],
+        bootstrap_servers=['broker:29092'],
         max_block_ms=5000
     )
     for invoice_id in df["InvoiceNo"].unique():
 
         msg=format_msg(df.loc[df['InvoiceNo']==invoice_id],invoice_id)
-        #print(msg)
+        #print(f"Producing Invoice: {msg["invoice_id"]}")
         
         producer.send(
             'sales',
@@ -51,19 +49,15 @@ def stream_data():
         
         time.sleep(interval)
 
-stream_data()
-
-"""
 with DAG(
-    'user_automation',
+    'stream_sales',
     default_args= default_args,
     schedule_interval='@daily',
     catchup= False
 ) as dag:
     
     streaming_task = PythonOperator(
-        task_id='stream_data_from_api',
+        task_id='produce_sales_stream',
         python_callable=stream_data
     )
     streaming_task
-"""
