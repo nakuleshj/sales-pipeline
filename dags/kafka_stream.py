@@ -53,7 +53,8 @@ with DAG(
     'stream_sales',
     default_args= default_args,
     schedule_interval='@daily',
-    catchup= False
+    catchup= False,
+    is_paused_upon_creation=False
 ) as dag:
     
     streaming_task = PythonOperator(
