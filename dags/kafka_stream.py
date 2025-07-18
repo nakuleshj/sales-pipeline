@@ -22,7 +22,7 @@ def format_msg(invoice_data: pd.DataFrame, invoice_id: int):
     msg = {
         'timestamp':datetime.now().strftime('%m-%d-%y %H:%M:%S'),
         'invoice_id':invoice_id,
-        'customer_id': int(customer_id[0]),
+        'customer_id': round(customer_id[0],0),
         'country': country[0],
         'products': product_data.to_dict('records')
     }
@@ -53,8 +53,8 @@ with DAG(
     'stream_sales',
     default_args= default_args,
     schedule_interval='@daily',
-    catchup= False,
-    is_paused_upon_creation=False
+    catchup= False
+    #is_paused_upon_creation=False
 ) as dag:
     
     streaming_task = PythonOperator(
