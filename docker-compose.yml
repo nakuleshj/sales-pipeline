@@ -16,7 +16,7 @@ services:
         timeout: 5s
         retries: 5
       networks:
-        - confluent
+        - sales-pipeline
 
   broker:
     image: confluentinc/cp-server:7.4.0
@@ -48,7 +48,7 @@ services:
       CONFLUENT_METRICS_ENABLE: 'false'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     networks:
-      - confluent
+      - sales-pipeline
     healthcheck:
       test: [ "CMD", "bash", "-c", 'nc -z localhost 9092' ]
       interval: 10s
@@ -69,7 +69,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
     networks:
-      - confluent
+      - sales-pipeline
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
       interval: 30s
@@ -97,7 +97,7 @@ services:
       CONFLUENT_METRICS_ENABLE: 'false'
       PORT: 9021
     networks:
-      - confluent
+      - sales-pipeline
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
       interval: 30s
@@ -116,7 +116,7 @@ services:
       AIRFLOW__WEBSERVER__SECRET_KEY: "I2CbLa8F4s0A3mSYRngKeVhTZoPutZBNCXnHTS8ZoT0"
     entrypoint: ["bash", "-c", "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"]
     networks:
-      - confluent
+      - sales-pipeline
   airflow-webserver:
     build:
       context: .
@@ -136,7 +136,7 @@ services:
       - ./airflow/dags:/opt/airflow/dags
     command: webserver
     networks:
-      - confluent
+      - sales-pipeline
   airflow-scheduler:
     build:
       context: .
@@ -153,7 +153,7 @@ services:
       - ./dags:/opt/airflow/dags
     command: scheduler
     networks:
-      - confluent
+      - sales-pipeline
   airflow-postgres:
     image: postgres:15
     container_name: airflow-postgres
@@ -166,15 +166,17 @@ services:
     volumes:
       - airflow_pgdata:/var/lib/postgresql/data
     networks:
-      - confluent
+      - sales-pipeline
   spark-master:
     image: bitnami/spark:latest
     command: bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "9090:8080"
       - "7077:7077"
+    volumes:
+      - ./spark:/opt/spark-apps
     networks:
-      - confluent
+      - sales-pipeline
   spark-worker:
     image: bitnami/spark:latest
     command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
@@ -185,8 +187,10 @@ services:
       SPARK_WORKER_CORES: 2
       SPARK_WORKER_MEMORY: 1g
       SPARK_MASTER_URL: spark://spark-master:7077
+    volumes:
+      - ./spark:/opt/spark-apps
     networks:
-      - confluent
+      - sales-pipeline
 
   retail_warehouse:
     image: postgres:15
@@ -198,10 +202,10 @@ services:
     ports:
       - "5433:5432"
     networks:
-      - confluent
+      - sales-pipeline
 
 volumes:
   airflow_pgdata:
 
 networks:
-  confluent:
+  sales-pipeline:
