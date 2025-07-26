@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   zookeeper:
       image: confluentinc/cp-zookeeper:7.4.0
@@ -192,13 +190,13 @@ services:
     networks:
       - sales-pipeline
 
-  retail_warehouse:
+  sales_postgres:
     image: postgres:15
-    container_name: retail_warehouse
+    container_name: sales_postgres
     environment:
       POSTGRES_USER: retail_admin
       POSTGRES_PASSWORD: retail123
-      POSTGRES_DB: airflow
+      POSTGRES_DB: salesdb
     ports:
       - "5433:5432"
     networks:
@@ -206,6 +204,5 @@ services:
 
 volumes:
   airflow_pgdata:
-
 networks:
   sales-pipeline:
