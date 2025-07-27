@@ -197,6 +197,8 @@ services:
       POSTGRES_USER: retail_admin
       POSTGRES_PASSWORD: retail123
       POSTGRES_DB: salesdb
+    volumes:
+      - ./sales_db/init_salesdb.sql:/docker-entrypoint-initdb.d/init_salesdb.sql
     ports:
       - "5433:5432"
     networks:
