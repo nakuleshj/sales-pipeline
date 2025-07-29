@@ -11,6 +11,7 @@ default_args = {"owner": "nakulesh", "start_date": datetime(2023, 9, 3, 10, 00)}
 
 def get_data():
     df = pd.read_csv("/opt/airflow/data/retail_dataset.csv")
+    df = df.dropna(subset=["InvoiceNo", "StockCode", "Description", "Quantity", "UnitPrice", "CustomerID", "Country"])
     return df
 
 
@@ -21,10 +22,18 @@ def format_msg(invoice_data: pd.DataFrame, invoice_id: int):
     product_data = invoice_data.drop(
         columns=["InvoiceNo", "Country", "CustomerID", "InvoiceDate"]
     )
+    product_data = product_data.rename(
+        columns={
+            "StockCode": "product_id",
+            "Description": "description",
+            "Quantity": "quantity",
+            "UnitPrice": "price"
+        }
+    )
     msg = {
         "timestamp": datetime.now().strftime("%m-%d-%y %H:%M:%S"),
         "invoice_id": invoice_id,
-        "customer_id": round(customer_id[0], 0),
+        "customer_id": customer_id[0] if len(customer_id) > 0 else None,
         "country": country[0],
         "products": product_data.to_dict("records"),
     }
