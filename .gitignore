@@ -4,4 +4,6 @@ __pycache__
 
 dags/data/*.xlsx
 
+.DS_Store
+
 metabase-data
