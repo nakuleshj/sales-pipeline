@@ -6,6 +6,7 @@ from pyspark.sql.functions import (
     explode,
     when,
     sum,
+    udf
 )
 from pyspark.sql.types import *
 from pyspark.sql.window import Window
@@ -63,8 +64,69 @@ df_parsed = df_str.select(from_json(col("value"), main_schema).alias("data")).se
 
 
 def write_to_postgres(fact_batch, batch_id):
+
+    df_customer = (
+    fact_batch.select(
+        col("customer_id").alias("customer_id"),
+        col("country").alias("country"),
+    )
+    .distinct()
+    .withColumn(
+        "customer_name",
+        fake_name()
+    )
+    )
+
+    df_product = (
+    fact_batch.select(
+        explode(col("products")).alias("product"),
+    )
+    .select(
+        col("product.product_id").alias("product_id"),
+        col("product.description").alias("description"),
+    )
+    )
+
+    df_invoice = (
+        fact_batch.select(
+            col("invoice_id").alias("invoice_id"),
+            col("country").alias("country")
+        )
+        .withColumn(
+            "sales_channel",
+            when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
+        )
+    )
+
+    df_fact_sales = fact_batch.select(
+            col("invoice_id").alias("invoice_id"),
+            col("customer_id").alias("customer_id"),
+            col("country").alias("country"),
+            col("timestamp").alias("timestamp"),
+            explode(col("products")).alias("product"),
+        ) \
+        .select(
+            col("invoice_id"),
+            col("customer_id"),
+            col("product.product_id").alias("product_id"),
+            col("product.quantity").cast(IntegerType()).alias("quantity"),
+            col("product.price").cast(DoubleType()).alias("price"),
+            col("timestamp").alias("timestamp"),
+        ) \
+        .withColumn(
+            "timestamp",
+            to_timestamp(col("timestamp"), "MM-dd-yyyy HH:mm:ss")
+        ) \
+        .withColumn(
+            "total_amount",
+            col("quantity") * col("price")
+        ) \
+        .withColumn(
+            "is_returned", 
+            when(col("quantity") < 0,True).otherwise(False))
+
     df_customer.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5432/salesdb"
+        "url", "jdbc:postgresql://localhost:5433/salesdb"
     ).option("dbtable", "dim_customer").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
@@ -74,7 +136,7 @@ def write_to_postgres(fact_batch, batch_id):
     ).save()
 
     df_product.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5432/salesdb"
+        "url", "jdbc:postgresql://localhost:5433/salesdb"
     ).option("dbtable", "dim_product").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
@@ -84,7 +146,7 @@ def write_to_postgres(fact_batch, batch_id):
     ).save()
 
     df_invoice.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5432/salesdb"
+        "url", "jdbc:postgresql://localhost:5433/salesdb"
     ).option("dbtable", "dim_invoice").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
@@ -93,8 +155,8 @@ def write_to_postgres(fact_batch, batch_id):
         "append"
     ).save()
 
-    fact_batch.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5432/salesdb"
+    df_fact_sales.write.format("jdbc").option(
+        "url", "jdbc:postgresql://localhost:5433/salesdb"
     ).option("dbtable", "fact_product_sales").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
@@ -103,71 +165,14 @@ def write_to_postgres(fact_batch, batch_id):
         "append"
     ).save()
 
-df_customer = (
-    df_parsed.select(
-        col("customer_id").alias("customer_id"),
-        col("country").alias("country"),
-    )
-    .distinct()
-    .withColumn(
-        "customer_name",
-        fake.name()
-    )
-)
+@udf(StringType())
+def fake_name():
+    return fake.name()
 
-df_product = (
-    df_parsed.select(
-        explode(col("products")).alias("product"),
-    )
-    .select(
-        col("product.product_id").alias("product_id"),
-        col("product.description").alias("description"),
-    )
-)
-
-df_invoice = (
-    df_parsed.select(
-        col("invoice_id").alias("invoice_id")
-    )
-    .withColumn(
-        "sales_channel",
-        when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
-    )
-    .withColumn(
-        "total_amount",
-        sum(col("product.price") * col("product.quantity")).over(
-            Window.partitionBy("invoice_id")
-    )
-))
-
-df_fact_sales = df_parsed.select(
-        col("invoice_id").alias("invoice_id"),
-        col("customer_id").alias("customer_id"),
-        col("country").alias("country"),
-        explode(col("products")).alias("product"),
-    ) \
-    .select(
-        col("invoice_id"),
-        col("customer_id"),
-        col("product.product_id").alias("product_id"),
-        col("product.quantity").cast(IntegerType()).alias("quantity"),
-        col("product.price").cast(DoubleType()).alias("price"),
-    ) \
-    .withColumn(
-        "timestamp",
-        to_timestamp(col("timestamp"), "yyyy-MM-dd'T'HH:mm:ss")
-    ) \
-    .withColumn(
-        "total_amount",
-        col("quantity") * col("price")
-    ) \
-    .withColumn(
-        "is_returned", 
-        when(col("quantity") < 0,True).otherwise(False)).cast(BooleanType())
 
 
 query = (
-    df_fact_sales.writeStream
+    df_parsed.writeStream
     .foreachBatch(write_to_postgres)
     .outputMode("append")
     .start()
