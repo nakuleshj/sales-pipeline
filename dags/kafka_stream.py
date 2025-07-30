@@ -31,7 +31,7 @@ def format_msg(invoice_data: pd.DataFrame, invoice_id: int):
         }
     )
     msg = {
-        "timestamp": datetime.now().strftime("%m-%d-%y %H:%M:%S"),
+        "timestamp": datetime.now().strftime("%m-%d-%Y %H:%M:%S"),
         "invoice_id": invoice_id,
         "customer_id": customer_id[0] if len(customer_id) > 0 else None,
         "country": country[0],
