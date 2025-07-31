@@ -61,7 +61,7 @@ with DAG(
     default_args=default_args,
     schedule_interval="@daily",
     catchup=False,
-    # is_paused_upon_creation=False
+    is_paused_upon_creation=False
 ) as dag:
 
     streaming_task = PythonOperator(
