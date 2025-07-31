@@ -5,8 +5,7 @@ CREATE TABLE IF NOT EXISTS dim_customer (
 );
 CREATE TABLE IF NOT EXISTS dim_product (
     product_id VARCHAR(20) PRIMARY KEY,
-    description VARCHAR(100),
-    product_name VARCHAR(100) NOT NULL
+    description VARCHAR(100)
 );
 CREATE TABLE IF NOT EXISTS dim_invoice (
     invoice_id VARCHAR(50) PRIMARY KEY,
