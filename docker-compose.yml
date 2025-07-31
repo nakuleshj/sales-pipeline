@@ -45,6 +45,7 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'false'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
     networks:
       - sales-pipeline
     healthcheck:
@@ -107,7 +108,10 @@ services:
       context: .
       dockerfile: Dockerfile.airflow
     depends_on:
-      - airflow-postgres
+      airflow-postgres:
+        condition: service_started
+      broker:
+        condition: service_healthy
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
