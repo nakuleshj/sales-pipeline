@@ -1,27 +1,50 @@
-CREATE TABLE IF NOT EXISTS dim_customer (
-    customer_id VARCHAR(20) PRIMARY KEY,
-    customer_name VARCHAR(100) NOT NULL,
-    country VARCHAR(50)
-);
-CREATE TABLE IF NOT EXISTS dim_product (
-    product_id VARCHAR(20) PRIMARY KEY,
-    description VARCHAR(100)
-);
-CREATE TABLE IF NOT EXISTS dim_invoice (
-    invoice_id VARCHAR(50) PRIMARY KEY,
-    sales_channel VARCHAR(50) NOT NULL
-);
-CREATE TABLE IF NOT EXISTS fact_product_sales (
+CREATE TABLE IF NOT EXISTS raw_transactions (
     transaction_id SERIAL PRIMARY KEY,
     timestamp TIMESTAMP NOT NULL,
     customer_id VARCHAR(20) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    country VARCHAR(50),
     product_id VARCHAR(20) NOT NULL,
+    description VARCHAR(100),
     invoice_id VARCHAR(50) NOT NULL,
+    sales_channel VARCHAR(50) NOT NULL,
     quantity INTEGER NOT NULL,
     price NUMERIC(10, 2) NOT NULL,
-    is_returned BOOLEAN NOT NULL DEFAULT FALSE,
-    total_amount NUMERIC(10, 2) NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
-    FOREIGN KEY (product_id) REFERENCES dim_product(product_id),
-    FOREIGN KEY (invoice_id) REFERENCES dim_invoice(invoice_id)
+    is_returned BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE VIEW IF NOT EXISTS dim_product AS (
+    SELECT DISTINCT
+        product_id,
+        description
+    FROM raw_transactions
+)
+CREATE VIEW IF NOT EXISTS dim_customer AS (
+    SELECT DISTINCT
+        customer_id,
+        customer_name,
+        country
+    FROM raw_transactions
+);
+CREATE VIEW IF NOT EXISTS fact_sales AS (
+    SELECT
+        rt.transaction_id,
+        rt.timestamp,
+        rt.customer_id,
+        rt.product_id,
+        rt.invoice_id,
+        rt.sales_channel,
+        rt.quantity,
+        rt.price,
+        rt.is_returned,
+        (rt.quantity * rt.price) AS total
+    FROM raw_transactions rt
+);
+CREATE VIEW IF NOT EXISTS fact_invoice AS (
+    SELECT
+        invoice_id,
+        SUM(total_amount) AS total_amount,
+        COUNT(DISTINCT transaction_id) AS transaction_count
+    FROM raw_transactions
+    GROUP BY invoice_id
 );
