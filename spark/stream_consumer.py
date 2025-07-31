@@ -95,8 +95,10 @@ def write_to_postgres(fact_batch, batch_id):
         .withColumn(
             "sales_channel",
             when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
-        )
-    )
+        ).select(
+            col("invoice_id"),
+            col("sales_channel")
+    ))
 
     df_fact_sales = fact_batch.select(
             col("invoice_id").alias("invoice_id"),
@@ -168,8 +170,6 @@ def write_to_postgres(fact_batch, batch_id):
 @udf(StringType())
 def fake_name():
     return fake.name()
-
-
 
 query = (
     df_parsed.writeStream

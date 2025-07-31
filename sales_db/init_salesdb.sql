@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS dim_customer (
 );
 CREATE TABLE IF NOT EXISTS dim_product (
     product_id VARCHAR(20) PRIMARY KEY,
+    description VARCHAR(100),
     product_name VARCHAR(100) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS dim_invoice (
@@ -13,13 +14,14 @@ CREATE TABLE IF NOT EXISTS dim_invoice (
 );
 CREATE TABLE IF NOT EXISTS fact_product_sales (
     transaction_id SERIAL PRIMARY KEY,
-    event_time TIMESTAMP NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
     customer_id VARCHAR(20) NOT NULL,
     product_id VARCHAR(20) NOT NULL,
     invoice_id VARCHAR(50) NOT NULL,
     quantity INTEGER NOT NULL,
     price NUMERIC(10, 2) NOT NULL,
     is_returned BOOLEAN NOT NULL DEFAULT FALSE,
+    total_amount NUMERIC(10, 2) NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES dim_customer(customer_id),
     FOREIGN KEY (product_id) REFERENCES dim_product(product_id),
     FOREIGN KEY (invoice_id) REFERENCES dim_invoice(invoice_id)
