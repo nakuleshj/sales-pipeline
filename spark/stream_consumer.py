@@ -77,87 +77,36 @@ def write_to_postgres(fact_batch, batch_id):
     )
     )
 
-    df_product = (
-    fact_batch.select(
-        explode(col("products")).alias("product"),
-    )
-    .select(
-        col("product.product_id").alias("product_id"),
-        col("product.description").alias("description"),
-    )
-    )
-
-    df_invoice = (
-        fact_batch.select(
-            col("invoice_id").alias("invoice_id"),
-            col("country").alias("country")
-        )
-        .withColumn(
-            "sales_channel",
-            when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
-        ).select(
-            col("invoice_id"),
-            col("sales_channel")
-    ))
-
-    df_fact_sales = fact_batch.select(
+    df_raw_transactions = fact_batch.select(
             col("invoice_id").alias("invoice_id"),
             col("customer_id").alias("customer_id"),
             col("country").alias("country"),
             col("timestamp").alias("timestamp"),
             explode(col("products")).alias("product"),
         ) \
-        .select(
-            col("invoice_id"),
-            col("customer_id"),
-            col("product.product_id").alias("product_id"),
-            col("product.quantity").cast(IntegerType()).alias("quantity"),
-            col("product.price").cast(DoubleType()).alias("price"),
-            col("timestamp").alias("timestamp"),
-        ) \
         .withColumn(
             "timestamp",
             to_timestamp(col("timestamp"), "MM-dd-yyyy HH:mm:ss")
         ) \
         .withColumn(
-            "total_amount",
+            "total",
             col("quantity") * col("price")
         ) \
         .withColumn(
             "is_returned", 
-            when(col("quantity") < 0,True).otherwise(False))
+            when(col("quantity") < 0,True).otherwise(False)) \
+        .withColumn(
+            "customer_name",
+            fake_name()
+        ) \
+        .withColumn(
+            "sales_channel",
+            when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
+        ) \
+    # Add customer names to each customer_id
+    df_raw_transactions.show(truncate=False)
 
-    df_customer.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5433/salesdb"
-    ).option("dbtable", "dim_customer").option("user", "retail_admin").option(
-        "password", "retail123"
-    ).option(
-        "driver", "org.postgresql.Driver"
-    ).mode(
-        "append"
-    ).save()
-
-    df_product.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5433/salesdb"
-    ).option("dbtable", "dim_product").option("user", "retail_admin").option(
-        "password", "retail123"
-    ).option(
-        "driver", "org.postgresql.Driver"
-    ).mode(
-        "append"
-    ).save()
-
-    df_invoice.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5433/salesdb"
-    ).option("dbtable", "dim_invoice").option("user", "retail_admin").option(
-        "password", "retail123"
-    ).option(
-        "driver", "org.postgresql.Driver"
-    ).mode(
-        "append"
-    ).save()
-
-    df_fact_sales.write.format("jdbc").option(
+    """df_raw_transactions.write.format("jdbc").option(
         "url", "jdbc:postgresql://localhost:5433/salesdb"
     ).option("dbtable", "fact_product_sales").option("user", "retail_admin").option(
         "password", "retail123"
@@ -165,7 +114,12 @@ def write_to_postgres(fact_batch, batch_id):
         "driver", "org.postgresql.Driver"
     ).mode(
         "append"
-    ).save()
+    ).save()"""
+    df_raw_transactions.write.format("console").option(
+        "truncate", "false"
+    ).mode(
+        "append"
+    ).start()
 
 @udf(StringType())
 def fake_name():
@@ -174,6 +128,7 @@ def fake_name():
 query = (
     df_parsed.writeStream
     .foreachBatch(write_to_postgres)
+    .format("console").option("truncate", "false")
     .outputMode("append")
     .start()
 )
