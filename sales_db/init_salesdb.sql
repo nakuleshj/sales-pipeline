@@ -10,10 +10,11 @@ CREATE TABLE IF NOT EXISTS raw_transactions (
     sales_channel VARCHAR(50) NOT NULL,
     quantity INTEGER NOT NULL,
     price NUMERIC(10, 2) NOT NULL,
-    is_returned BOOLEAN NOT NULL DEFAULT FALSE
+    is_returned BOOLEAN NOT NULL DEFAULT FALSE,
+    total NUMERIC(10, 2) NOT NULL
 );
 
-CREATE VIEW IF NOT EXISTS dim_product AS (
+/*CREATE VIEW IF NOT EXISTS dim_product AS (
     SELECT DISTINCT
         product_id,
         description
@@ -28,17 +29,17 @@ CREATE VIEW IF NOT EXISTS dim_customer AS (
 );
 CREATE VIEW IF NOT EXISTS fact_sales AS (
     SELECT
-        rt.transaction_id,
-        rt.timestamp,
-        rt.customer_id,
-        rt.product_id,
-        rt.invoice_id,
-        rt.sales_channel,
-        rt.quantity,
-        rt.price,
-        rt.is_returned,
-        (rt.quantity * rt.price) AS total
-    FROM raw_transactions rt
+        transaction_id,
+        timestamp,
+        customer_id,
+        product_id,
+        invoice_id,
+        sales_channel,
+        quantity,
+        price,
+        is_returned,
+        total
+    FROM raw_transactions
 );
 CREATE VIEW IF NOT EXISTS fact_invoice AS (
     SELECT
@@ -47,4 +48,4 @@ CREATE VIEW IF NOT EXISTS fact_invoice AS (
         COUNT(DISTINCT transaction_id) AS transaction_count
     FROM raw_transactions
     GROUP BY invoice_id
-);
+);*/
