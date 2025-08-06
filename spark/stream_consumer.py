@@ -5,12 +5,9 @@ from pyspark.sql.functions import (
     to_timestamp,
     explode,
     when,
-    sum,
-    udf
+    round
 )
 from pyspark.sql.types import *
-from pyspark.sql.window import Window
-import faker
 
 main_schema = StructType(
     [
@@ -44,8 +41,6 @@ spark = (
     .getOrCreate()
 )
 
-fake = faker.Faker()
-
 spark.sparkContext.setLogLevel("WARN")
 
 raw_df = (
@@ -65,18 +60,6 @@ df_parsed = df_str.select(from_json(col("value"), main_schema).alias("data")).se
 
 def write_to_postgres(fact_batch, batch_id):
 
-    df_customer = (
-    fact_batch.select(
-        col("customer_id").alias("customer_id"),
-        col("country").alias("country"),
-    )
-    .distinct()
-    .withColumn(
-        "customer_name",
-        fake_name()
-    )
-    )
-
     df_raw_transactions = fact_batch.select(
             col("invoice_id").alias("invoice_id"),
             col("customer_id").alias("customer_id"),
@@ -84,51 +67,47 @@ def write_to_postgres(fact_batch, batch_id):
             col("timestamp").alias("timestamp"),
             explode(col("products")).alias("product"),
         ) \
+        .select(
+            col("invoice_id"),
+            col("customer_id"),
+            col("country"),
+            col("timestamp"),
+            col("product.product_id").alias("product_id"),
+            col("product.description").alias("description"),
+            col("product.quantity").alias("quantity"),
+            col("product.price").alias("price"),
+        ) \
         .withColumn(
             "timestamp",
             to_timestamp(col("timestamp"), "MM-dd-yyyy HH:mm:ss")
         ) \
         .withColumn(
             "total",
-            col("quantity") * col("price")
+            round(col("quantity") * col("price"),2)
         ) \
         .withColumn(
             "is_returned", 
             when(col("quantity") < 0,True).otherwise(False)) \
         .withColumn(
-            "customer_name",
-            fake_name()
-        ) \
-        .withColumn(
             "sales_channel",
             when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
         ) \
     # Add customer names to each customer_id
-    df_raw_transactions.show(truncate=False)
+    df_raw_transactions.show()
 
-    """df_raw_transactions.write.format("jdbc").option(
+    df_raw_transactions.write.format("jdbc").option(
         "url", "jdbc:postgresql://localhost:5433/salesdb"
-    ).option("dbtable", "fact_product_sales").option("user", "retail_admin").option(
+    ).option("dbtable", "raw_transactions").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
         "driver", "org.postgresql.Driver"
     ).mode(
         "append"
-    ).save()"""
-    df_raw_transactions.write.format("console").option(
-        "truncate", "false"
-    ).mode(
-        "append"
-    ).start()
-
-@udf(StringType())
-def fake_name():
-    return fake.name()
+    ).save()
 
 query = (
     df_parsed.writeStream
     .foreachBatch(write_to_postgres)
-    .format("console").option("truncate", "false")
     .outputMode("append")
     .start()
 )
