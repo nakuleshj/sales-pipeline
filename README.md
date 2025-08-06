@@ -1,12 +1,15 @@
 # Real-Time Retail Sales Streaming Pipeline
-
-A fully containerized, event-driven data pipeline that ingests, processes, models, and visualizes real-time retail sales data using open-source tools. Built with Kafka, Spark, dbt, PostgreSQL, and Metabase — this pipeline demonstrates a modern data architecture with real-time streaming and SQL-based transformations.
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![dbt](https://img.shields.io/badge/dbt-Data_Transformation-181717?logo=dbt)](https://github.com/nakuleshj/sales-pipeline)
+[![Apache_Kafka](https://img.shields.io/badge/Apache_Kafka-Streaming-181717?logo=apachekafka)](https://github.com/nakuleshj/sales-pipeline)
+[![Apache Spark](https://img.shields.io/badge/Apache_Spark-Distributed_Processing-181717?logo=apachespark)](https://github.com/nakuleshj/sales-pipeline)
+[![Apache Airflow](https://img.shields.io/badge/Apache_Airflow-Orchestration-181717?logo=apacheairflow&logoColor=ffffff)](https://github.com/nakuleshj/sales-pipeline)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Data_Warehouse-181717?logo=postgresql)](https://github.com/nakuleshj/sales-pipeline)  
+A fully containerized, event-driven data pipeline that ingests, processes, models, and visualizes real-time retail sales data using open-source tools. Built with Kafka, Spark, dbt, PostgreSQL, and Metabase, this pipeline demonstrates a modern data architecture featuring real-time streaming and SQL-based transformations.
 
 ## Problem Statement
 
 Retail businesses generate large volumes of transactional data that can be leveraged for real-time analytics, inventory management, and demand forecasting. However, most pipelines are batch-oriented and lack scalability. This project introduces a **streaming-first architecture** to continuously ingest and transform sales data, enabling business stakeholders to monitor performance in real-time.
-
 
 ## Features
 
