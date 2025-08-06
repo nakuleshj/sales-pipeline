@@ -7,3 +7,7 @@ dags/data/*.xlsx
 .DS_Store
 
 metabase-data
+
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
