@@ -269,6 +269,6 @@ services:
 volumes:
   airflow_pgdata:
   pgadmin_data:
-  metabase_data:
+  metabase-data:
 networks:
   sales-pipeline:
