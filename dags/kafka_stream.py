@@ -6,12 +6,25 @@ from kafka import KafkaProducer
 import pandas as pd
 import time
 
-default_args = {"owner": "nakulesh", "start_date": datetime(2023, 9, 3, 10, 00)}
+default_args = {
+    "owner": "nakulesh", 
+    "start_date": datetime(2025, 1, 1)
+    }
 
 
 def get_data():
     df = pd.read_csv("/opt/airflow/data/retail_dataset.csv")
-    df = df.dropna(subset=["InvoiceNo", "StockCode", "Description", "Quantity", "UnitPrice", "CustomerID", "Country"])
+    df = df.dropna(
+        subset=[
+            "InvoiceNo",
+            "StockCode",
+            "Description",
+            "Quantity",
+            "UnitPrice",
+            "CustomerID",
+            "Country",
+        ]
+    )
     return df
 
 
@@ -27,7 +40,7 @@ def format_msg(invoice_data: pd.DataFrame, invoice_id: int):
             "StockCode": "product_id",
             "Description": "description",
             "Quantity": "quantity",
-            "UnitPrice": "price"
+            "UnitPrice": "price",
         }
     )
     msg = {
@@ -59,9 +72,9 @@ def stream_data():
 with DAG(
     "stream_sales",
     default_args=default_args,
-    schedule_interval="@daily",
+    schedule="@once",
     catchup=False,
-    is_paused_upon_creation=False
+    is_paused_upon_creation=False,
 ) as dag:
 
     streaming_task = PythonOperator(
