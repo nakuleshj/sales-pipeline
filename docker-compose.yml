@@ -53,55 +53,71 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  schema-registry:
-    image: confluentinc/cp-schema-registry:7.4.0
-    hostname: schema-registry
-    container_name: schema-registry
+  kafka-topic-init:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-topic-init
     depends_on:
       broker:
         condition: service_healthy
-    ports:
-      - "8081:8081"
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    entrypoint: [ "bash", "-c" ]
+    command: >
+      "
+      echo 'Waiting for Kafka to be ready...' &&
+      sleep 10 &&
+      kafka-topics --bootstrap-server broker:29092 --create --if-not-exists \
+        --topic sales --partitions 3 --replication-factor 1 &&
+      echo 'Kafka topic created!'
+      "
     networks:
       - sales-pipeline
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+#  schema-registry:
+#    image: confluentinc/cp-schema-registry:7.4.0
+#    hostname: schema-registry
+#    container_name: schema-registry
+#    depends_on:
+#      broker:
+#        condition: service_healthy
+#    ports:
+#      - "8081:8081"
+#    environment:
+#      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+#      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+#      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+#    networks:
+#      - sales-pipeline
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:8081/" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
   
-  control-center:
-    image: confluentinc/cp-enterprise-control-center:7.4.0
-    hostname: control-center
-    container_name: control-center
-    depends_on:
-      broker:
-        condition: service_healthy
-      schema-registry:
-        condition: service_healthy
-    ports:
-      - "9021:9021"
-    environment:
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      CONTROL_CENTER_REPLICATION_FACTOR: 1
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-      CONFLUENT_METRICS_ENABLE: 'false'
-      PORT: 9021
-    networks:
-      - sales-pipeline
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+#  control-center:
+#    image: confluentinc/cp-enterprise-control-center:7.4.0
+#    hostname: control-center
+#    container_name: control-center
+#    depends_on:
+#      broker:
+#        condition: service_healthy
+#      schema-registry:
+#        condition: service_healthy
+#    ports:
+#      - "9021:9021"
+#    environment:
+#      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+#      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+#      CONTROL_CENTER_REPLICATION_FACTOR: 1
+#      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+#      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+#      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+#      CONFLUENT_METRICS_ENABLE: 'false'
+#      PORT: 9021
+#    networks:
+#      - sales-pipeline
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:9021/health" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
 
   airflow-init:
     build:
@@ -134,6 +150,8 @@ services:
       AIRFLOW__WEBSERVER__SECRET_KEY: "I2CbLa8F4s0A3mSYRngKeVhTZoPutZBNCXnHTS8ZoT0"
     ports:
       - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
     command: webserver
     networks:
       - sales-pipeline
@@ -153,6 +171,8 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./dbt:/opt/airflow/dbt
+      - ./.dbt/profiles.yml:/opt/airflow/.dbt/profiles.yml
+      - /var/run/docker.sock:/var/run/docker.sock
     command: scheduler
     networks:
       - sales-pipeline
@@ -172,6 +192,10 @@ services:
   spark-master:
     image: bitnami/spark:latest
     command: bin/spark-class org.apache.spark.deploy.master.Master
+    container_name: spark-master
+    build: 
+      context: .
+      dockerfile: Dockerfile.spark
     ports:
       - "9090:8080"
       - "7077:7077"
@@ -213,6 +237,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
       - "5050:80"
     volumes:
@@ -227,12 +253,15 @@ services:
     ports:
       - "3000:3000"
     environment:
+      MB_SETUP_COMPLETED: "true"
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: metabase
+      MB_DB_DBNAME: salesdb
       MB_DB_PORT: 5432
       MB_DB_HOST: sales-postgres
       MB_DB_USER: retail_admin
       MB_DB_PASS: retail123
+      MB_EMAIL: admin@admin.com
+      MB_PASSWORD: admin123
     depends_on:
       - sales-postgres
     networks:

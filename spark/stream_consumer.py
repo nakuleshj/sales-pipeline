@@ -30,24 +30,23 @@ main_schema = StructType(
         ),
     ]
 )
-
+     
 spark = (
     SparkSession.builder.appName("SalesStreamConsumer")
     .config(
         "spark.jars.packages",
         "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0,"
         "org.postgresql:postgresql:42.7.3",
-    )
-    .getOrCreate()
+    ).getOrCreate()
 )
 
 spark.sparkContext.setLogLevel("WARN")
 
 raw_df = (
     spark.readStream.format("kafka")
-    .option("kafka.bootstrap.servers", "localhost:9092")
+    .option("kafka.bootstrap.servers", "broker:29092")
     .option("subscribe", "sales")
-    .option("startingOffsets", "latest")
+    .option("startingOffsets", "earliest")
     .load()
 )
 
@@ -96,7 +95,7 @@ def write_to_postgres(fact_batch, batch_id):
     df_raw_transactions.show()
 
     df_raw_transactions.write.format("jdbc").option(
-        "url", "jdbc:postgresql://localhost:5433/salesdb"
+        "url", "jdbc:postgresql://sales-postgres:5432/salesdb"
     ).option("dbtable", "raw_transactions").option("user", "retail_admin").option(
         "password", "retail123"
     ).option(
