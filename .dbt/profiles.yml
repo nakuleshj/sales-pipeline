@@ -1,0 +1,12 @@
+sales_pipeline_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: sales-postgres
+      user: retail_admin
+      password: retail123
+      dbname: salesdb
+      schema: analytics
+      port: 5432
+      threads: 4
