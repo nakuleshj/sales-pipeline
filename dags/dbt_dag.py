@@ -13,6 +13,7 @@ with DAG(
     schedule_interval=timedelta(minutes=1),
     default_args=default_args,
     catchup=False,
+    is_paused_upon_creation=False,
 ) as dag:
 
     dbt_run = BashOperator(
