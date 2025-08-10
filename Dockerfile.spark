@@ -2,17 +2,14 @@ FROM bitnami/spark:3.4.1
 
 USER root
 
-# Create a real user that matches the runtime UID/GID (bitnami uses 1001 by default)
 ARG SPARK_UID=1001
 ARG SPARK_GID=1001
 RUN groupadd -g ${SPARK_GID} spark || true && \
     useradd -m -u ${SPARK_UID} -g ${SPARK_GID} -s /bin/bash spark || true
 
-# Writable caches for Ivy, Spark local dirs, etc.
 RUN mkdir -p /tmp/.ivy2 /opt/spark/work-dir && \
     chown -R ${SPARK_UID}:${SPARK_GID} /tmp/.ivy2 /opt/spark /opt/bitnami/spark
 
-# Set env so the **launcher JVM** sees a username
 ENV USER=spark \
     HADOOP_USER_NAME=spark \
     SPARK_USER=spark \
