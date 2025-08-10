@@ -38,7 +38,7 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 ## Components
 
 | Layer            | Technology                  | Description |
-||--|-|
+|------------------|-----------------------------|-------------|
 | **Data Source**   | CSV file (sample retail sales) | Synthetic dataset simulating live transactions |
 | **Ingestion**     | Airflow DAG (`kafka_stream.py`) | Publishes CSV rows as JSON messages to Kafka topic `sales` |
 | **Stream Processing** | Spark Structured Streaming | Consumes Kafka messages, parses JSON, and writes to Postgres |
