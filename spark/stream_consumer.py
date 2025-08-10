@@ -5,7 +5,8 @@ from pyspark.sql.functions import (
     to_timestamp,
     explode,
     when,
-    round
+    round,
+    split
 )
 from pyspark.sql.types import *
 
@@ -91,7 +92,11 @@ def write_to_postgres(fact_batch, batch_id):
             "sales_channel",
             when(col("country") == "United Kingdom", "In-Store").otherwise("Online")
         ) \
-    # Add customer names to each customer_id
+        .withColumn(
+            "customer_id",
+            split(col("customer_id"), "[.]").getItem(0)
+        )
+    
     df_raw_transactions.show()
 
     df_raw_transactions.write.format("jdbc").option(
