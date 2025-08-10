@@ -1,5 +1,5 @@
 # Retail Sales Streaming Pipeline
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Apache Kafka](https://img.shields.io/badge/Kafka-231F20?logo=apache-kafka&logoColor=white)
 ![Apache Airflow](https://img.shields.io/badge/Airflow-017CEE?logo=apache-airflow&logoColor=white)
 ![Apache Spark](https://img.shields.io/badge/Spark-E25A1C?logo=apache-spark&logoColor=white)
