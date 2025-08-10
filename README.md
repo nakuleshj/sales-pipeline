@@ -1,7 +1,7 @@
-# Event-Driven Retail Sales Streaming Pipeline (Kafka + Airflow + Spark + Postgres + Metabase)
+# Retail Sales Streaming Pipeline (Kafka + Airflow + Spark + Postgres + Metabase)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
 
-A containerized, event-driven data pipeline that ingests, processes, stores, and visualizes real-time retail sales events using Kafka, Airflow, Spark, Postgres, and Metabase. Designed for local development and easy deployment via Docker Compose.
+A containerized, streaming data pipeline that ingests, processes, stores, and visualizes real-time retail sales events using Kafka, Airflow, Spark, Postgres, and Metabase. Designed for local development and easy deployment via Docker Compose.
 
 
 ## Problem Statement
