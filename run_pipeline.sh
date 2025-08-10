@@ -18,15 +18,5 @@ docker compose ps
 echo "Waiting for services to stabilize..."
 #sleep 10
 
-# Setup Python virtual environment and activate it
-python3 -m venv venv
-source venv/bin/activate
-
-# Install required Python packages
-echo "Installing required Python packages..."
-python3 -m pip install --upgrade pip
-pip install pyspark faker
-
-# Start Spark Consumer
-echo "Starting Spark Consumer..."
-python3 ./spark/stream_consumer.py
+# Open Metabase in the default web browser
+echo "open Metabase at http://localhost:3000"
