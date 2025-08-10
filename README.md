@@ -1,144 +1,107 @@
-# Real-Time Retail Sales Streaming Pipeline
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![dbt](https://img.shields.io/badge/dbt-Data_Transformation-181717?logo=dbt)](https://github.com/nakuleshj/sales-pipeline)
-[![Apache_Kafka](https://img.shields.io/badge/Apache_Kafka-Streaming-181717?logo=apachekafka)](https://github.com/nakuleshj/sales-pipeline)
-[![Apache Spark](https://img.shields.io/badge/Apache_Spark-Distributed_Processing-181717?logo=apachespark)](https://github.com/nakuleshj/sales-pipeline)
-[![Apache Airflow](https://img.shields.io/badge/Apache_Airflow-Orchestration-181717?logo=apacheairflow&logoColor=ffffff)](https://github.com/nakuleshj/sales-pipeline)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Data_Warehouse-181717?logo=postgresql)](https://github.com/nakuleshj/sales-pipeline)  
-A fully containerized, event-driven data pipeline that ingests, processes, models, and visualizes real-time retail sales data using open-source tools. Built with Kafka, Spark, dbt, PostgreSQL, and Metabase, this pipeline demonstrates a modern data architecture featuring real-time streaming and SQL-based transformations.
+# Event-Driven Retail Sales Streaming Pipeline (Kafka + Airflow + Spark + Postgres + Metabase)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-181717?logo=github)](https://github.com/nakuleshj/retail-sales-pipeline)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
+
+A containerized, event-driven data pipeline that ingests, processes, stores, and visualizes real-time retail sales events using Kafka, Airflow, Spark, Postgres, and Metabase. Designed for local development and easy deployment via Docker Compose.
+
+---
 
 ## Problem Statement
+Retail businesses often need to monitor and analyze transactions in real time to identify sales trends, detect anomalies, and optimize inventory. Traditional ETL processes are batch-oriented and introduce latency between data creation and actionable insights. This project demonstrates a real-time streaming architecture where retail sales data is produced, processed, and visualized with minimal delay.
 
-Retail businesses generate large volumes of transactional data that can be leveraged for real-time analytics, inventory management, and demand forecasting. However, most pipelines are batch-oriented and lack scalability. This project introduces a **streaming-first architecture** to continuously ingest and transform sales data, enabling business stakeholders to monitor performance in real-time.
+---
 
 ## Features
 
-- **Apache Kafka** for real-time data ingestion and delivery
-- **Spark Structured Streaming** to consume, parse, and clean Kafka streams
-- **PostgreSQL** as the centralized warehouse for modeled data
-- **dbt** to create raw and analytics-ready (gold) tables
-- **Metabase** for interactive dashboarding and insights
-- **Airflow** for scheduled ingestion and orchestration of the pipeline
-- **Docker Compose** to orchestrate all services locally with ease
+- **Event-Driven Architecture**: Kafka topics as the backbone for real-time data movement
+- **Automated Orchestration** with Apache Airflow to schedule and trigger data flows
+- **Stream Processing** using PySpark Structured Streaming
+- **Persistent Storage** in PostgreSQL for downstream analysis
+- **Interactive Dashboard** in Metabase for quick visual insights
+- **Fully containerized** stack using Docker Compose for easy local deployment
 
+---
+
+## Live Dashboard Preview
+![Live Dashboard Preview](./assets/retail-dashboard-preview.png)  
+_Metabase dashboard displaying real-time aggregated retail sales from the streaming pipeline._
+
+---
 
 ## Tech Stack
 
-| Layer | Tool(s) |
-|-------|--------|
-| **Orchestration** | Apache Airflow |
-| **Streaming & Messaging** | Apache Kafka, Zookeeper |
-| **Processing Engine** | Apache Spark (Structured Streaming) |
-| **Transformation** | dbt (Data Build Tool) |
-| **Storage / Warehouse** | PostgreSQL |
-| **Dashboarding** | Metabase |
-| **Containerization** | Docker Compose |
+**Streaming:** Apache Kafka  
+**Orchestration:** Apache Airflow  
+**Processing:** Apache Spark (Structured Streaming)  
+**Database:** PostgreSQL  
+**Visualization:** Metabase  
+**Infrastructure:** Docker Compose  
+**Language:** Python (pyspark, kafka-python, psycopg2)  
 
+---
 
-## Architecture Overview
+## Components
 
-![Architecture Diagram](./assets/sales_pipeline.png)  
-_Horizontal layered pipeline with Kafka → Spark → dbt → PostgreSQL → Metabase._
+| Layer            | Technology                  | Description |
+|------------------|-----------------------------|-------------|
+| **Data Source**   | CSV file (sample retail sales) | Synthetic dataset simulating live transactions |
+| **Ingestion**     | Airflow DAG (`kafka_stream.py`) | Publishes CSV rows as JSON messages to Kafka topic `sales` |
+| **Stream Processing** | Spark Structured Streaming | Consumes Kafka messages, parses JSON, and writes to Postgres |
+| **Storage**       | PostgreSQL                  | Stores processed transactions in `raw_transactions` table |
+| **Visualization** | Metabase                    | Interactive SQL-based dashboards over PostgreSQL data |
 
-### Data Flow:
+---
 
-1. **Airflow** triggers a sales data producer that sends JSON records to **Kafka topics**.
-2. **Spark Structured Streaming** jobs consume the Kafka stream, apply transformations (e.g., type casting, timestamping), and write to **PostgreSQL**.
-3. **dbt** models raw tables into analytics-ready gold models (e.g., daily sales, top products).
-4. **Metabase** connects to PostgreSQL to visualize real-time insights.
+## Architecture Flow (Step-by-Step)
 
+![High-level Architecture](./assets/sales_pipeline.png)  
 
-## Pipeline Components
+1. **Data Ingestion**  
+   Airflow DAG reads from a CSV and streams transaction records into Kafka topic `sales`.
 
-| Stage | Tool | Role |
-|-------|------|------|
-| **Ingestion** | Kafka + Airflow | Produces simulated retail sales events into Kafka topics |
-| **Processing** | Spark | Reads from Kafka, applies real-time transformations, writes to PostgreSQL |
-| **Transformation** | dbt | Builds raw → analytics-ready models inside PostgreSQL |
-| **Storage** | PostgreSQL | Serves as the central warehouse |
-| **Analytics** | Metabase | BI layer for dashboards and exploration |
+2. **Stream Processing**  
+   Spark Structured Streaming job consumes messages from Kafka, transforms them, and writes them into PostgreSQL.
 
+3. **Visualization**  
+   Metabase queries PostgreSQL in near real-time to provide dashboards and charts.
 
-## Local Setup
+---
 
-### Quick Setup (Recommended)
+## Key Learnings
+- Designed an event-driven streaming pipeline for real-time analytics
+- Integrated Kafka, Airflow, Spark, Postgres, and Metabase in a cohesive local stack
+- Used Spark Structured Streaming for low-latency ingestion into a relational database
+- Leveraged Docker Compose for reproducible deployments
 
-Run the entire pipeline using the included shell script:
+---
+
+## Try It Yourself
 
 ```bash
+# Clone repository
+git clone https://github.com/yourusername/retail-sales-pipeline
+cd retail-sales-pipeline
+
+# Run the stack
 chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
-This script will:
+Access the UIs:
+- Airflow: [http://localhost:8080](http://localhost:8080)
+- Metabase: [http://localhost:3000](http://localhost:3000)
+- pgAdmin: [http://localhost:5050](http://localhost:5050)
+- Spark UI: [http://localhost:9090](http://localhost:9090)
 
-- Restart Docker Compose services if already running
-- Build and start all containers (Kafka, Zookeeper, Airflow, Spark, PostgreSQL, Metabase, etc.)
-- Set up a Python virtual environment
-- Install Python dependencies (pyspark, faker)
-- Run the Spark Structured Streaming consumer
-
-
-### Manual Setup (Alternative)
-
-If you prefer manual control:
-
-```bash
-# Start all services
-docker compose up -d --build
-
-# Optionally check service status
-docker compose ps
-
-# Set up and activate Python virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install packages
-pip install --upgrade pip
-pip install pyspark faker
-
-# Start the Spark streaming job
-python3 ./spark/stream_consumer.py
-
-```
-
-Then access services:
-
-- Access **Airflow UI**: http://localhost:8080  
-- Access **Kafka Control Center**: http://localhost:9021  
-- Access **Metabase**: http://localhost:3000  
-- Access **pgAdmin**: http://localhost:5050
-
-
-## Example Metabase Dashboard
-
-_(Add preview GIF here)_
-
-Dashboards include:
-- Real-time total sales per category
-- Top-selling products by revenue
-- Sales heatmaps by hour/day
-- Transaction volume trends
-
-## Key Learnings
-
-- Built a real-time streaming pipeline using open-source components
-- Used **Airflow** for DAG orchestration and Kafka production
-- Leveraged **Spark Structured Streaming** for fault-tolerant, scalable data processing
-- Modeled raw → gold tables using **dbt** with PostgreSQL
-- Built automated, interactive **dashboards with Metabase**
-- Containerized the full pipeline using **Docker Compose**
+---
 
 ## Future Improvements
+- Add dbt transformations for analytics-ready models
+- Implement real-time anomaly detection on transaction data
+- Deploy pipeline to cloud-native services (AWS MSK, EMR, RDS, QuickSight)
 
-- Add anomaly detection on sales spikes using Spark MLlib
-- Store bronze/silver/gold layers in data lake (e.g., MinIO)
-- Add unit tests and data quality checks using **Great Expectations**
-- Integrate **dbt tests** and **Metabase auto-refresh**
-
+---
 
 ## License
-
 This project is licensed under the [MIT License](LICENSE).  
-Use, remix, or deploy freely with attribution.
+Feel free to use, modify, and share with attribution.
