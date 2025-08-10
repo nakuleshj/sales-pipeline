@@ -1,15 +1,12 @@
 # Event-Driven Retail Sales Streaming Pipeline (Kafka + Airflow + Spark + Postgres + Metabase)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-181717?logo=github)](https://github.com/nakuleshj/retail-sales-pipeline)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
 
 A containerized, event-driven data pipeline that ingests, processes, stores, and visualizes real-time retail sales events using Kafka, Airflow, Spark, Postgres, and Metabase. Designed for local development and easy deployment via Docker Compose.
 
----
 
 ## Problem Statement
 Retail businesses often need to monitor and analyze transactions in real time to identify sales trends, detect anomalies, and optimize inventory. Traditional ETL processes are batch-oriented and introduce latency between data creation and actionable insights. This project demonstrates a real-time streaming architecture where retail sales data is produced, processed, and visualized with minimal delay.
 
----
 
 ## Features
 
@@ -20,13 +17,11 @@ Retail businesses often need to monitor and analyze transactions in real time to
 - **Interactive Dashboard** in Metabase for quick visual insights
 - **Fully containerized** stack using Docker Compose for easy local deployment
 
----
 
 ## Live Dashboard Preview
 ![Live Dashboard Preview](./assets/retail-dashboard-preview.png)  
 _Metabase dashboard displaying real-time aggregated retail sales from the streaming pipeline._
 
----
 
 ## Tech Stack
 
@@ -38,19 +33,18 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 **Infrastructure:** Docker Compose  
 **Language:** Python (pyspark, kafka-python, psycopg2)  
 
----
+
 
 ## Components
 
 | Layer            | Technology                  | Description |
-|------------------|-----------------------------|-------------|
+||--|-|
 | **Data Source**   | CSV file (sample retail sales) | Synthetic dataset simulating live transactions |
 | **Ingestion**     | Airflow DAG (`kafka_stream.py`) | Publishes CSV rows as JSON messages to Kafka topic `sales` |
 | **Stream Processing** | Spark Structured Streaming | Consumes Kafka messages, parses JSON, and writes to Postgres |
 | **Storage**       | PostgreSQL                  | Stores processed transactions in `raw_transactions` table |
 | **Visualization** | Metabase                    | Interactive SQL-based dashboards over PostgreSQL data |
 
----
 
 ## Architecture Flow (Step-by-Step)
 
@@ -65,7 +59,6 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 3. **Visualization**  
    Metabase queries PostgreSQL in near real-time to provide dashboards and charts.
 
----
 
 ## Key Learnings
 - Designed an event-driven streaming pipeline for real-time analytics
@@ -73,7 +66,6 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 - Used Spark Structured Streaming for low-latency ingestion into a relational database
 - Leveraged Docker Compose for reproducible deployments
 
----
 
 ## Try It Yourself
 
@@ -93,14 +85,12 @@ Access the UIs:
 - pgAdmin: [http://localhost:5050](http://localhost:5050)
 - Spark UI: [http://localhost:9090](http://localhost:9090)
 
----
 
 ## Future Improvements
 - Add dbt transformations for analytics-ready models
 - Implement real-time anomaly detection on transaction data
 - Deploy pipeline to cloud-native services (AWS MSK, EMR, RDS, QuickSight)
 
----
 
 ## License
 This project is licensed under the [MIT License](LICENSE).  
