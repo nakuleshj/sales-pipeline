@@ -1,4 +1,4 @@
-# Retail Sales Streaming Pipeline (Kafka + Airflow + Spark + Postgres + Metabase)
+# Retail Sales Streaming Pipeline
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)  
 ![Apache Kafka](https://img.shields.io/badge/Kafka-231F20?logo=apache-kafka&logoColor=white)
 ![Apache Airflow](https://img.shields.io/badge/Airflow-017CEE?logo=apache-airflow&logoColor=white)
