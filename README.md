@@ -59,7 +59,7 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
    Airflow DAG reads from a CSV and streams transaction records into Kafka topic `sales`.
 
 2. **Stream Processing**  
-   Spark Structured Streaming job consumes messages from Kafka, transforms them, and writes them into PostgreSQL.
+   A Spark Structured Streaming job consumes messages from Kafka, transforms them, and writes the transformed messages into PostgreSQL.
 
 3. **Visualization**  
    Metabase queries PostgreSQL in near real-time to provide dashboards and charts.
@@ -76,7 +76,7 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/retail-sales-pipeline
+git clone https://github.com/nakuleshj/retail-sales-pipeline
 cd retail-sales-pipeline
 
 # Run the stack
