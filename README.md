@@ -86,10 +86,8 @@ chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
-Access the Metabase UI @ [http://localhost:3000](http://localhost:3000)
-> Demo Credentials:
-> Email: admin@admin.com
-> Password: admin@123
+Access the Metabase UI @ [http://localhost:3000](http://localhost:3000) using the below demo credentials:
+> Email: admin@admin.com | Password: admin@123
 
 
 ## Future Improvements
