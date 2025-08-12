@@ -24,7 +24,7 @@ Retail businesses often need to monitor and analyze transactions in real time to
 
 
 ## Live Dashboard Preview
-![Live Dashboard Preview](./assets/retail-dashboard-preview.png)  
+![Live Dashboard Preview](./assets/metabase_dashboard.gif)  
 _Metabase dashboard displaying real-time aggregated retail sales from the streaming pipeline._
 
 
@@ -92,7 +92,6 @@ Access the UIs:
 
 
 ## Future Improvements
-- Add dbt transformations for analytics-ready models
 - Implement real-time anomaly detection on transaction data
 - Deploy pipeline to cloud-native services (AWS MSK, EMR, RDS, QuickSight)
 
