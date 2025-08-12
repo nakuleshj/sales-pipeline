@@ -74,6 +74,8 @@ _Metabase dashboard displaying real-time aggregated retail sales from the stream
 
 ## Try It Yourself
 
+> **Prereqs**: Docker Desktop (or Docker Engine + Compose). Ensure 4+ GB RAM available for containers.
+
 ```bash
 # Clone repository
 git clone https://github.com/nakuleshj/retail-sales-pipeline
@@ -84,11 +86,10 @@ chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
-Access the UIs:
-- Airflow: [http://localhost:8080](http://localhost:8080)
-- Metabase: [http://localhost:3000](http://localhost:3000)
-- pgAdmin: [http://localhost:5050](http://localhost:5050)
-- Spark UI: [http://localhost:9090](http://localhost:9090)
+Access the Metabase UI @ [http://localhost:3000](http://localhost:3000)
+> Demo Credentials:
+> Email: admin@admin.com
+> Password: admin@123
 
 
 ## Future Improvements
